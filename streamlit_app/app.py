@@ -14,7 +14,7 @@ from streamlit_app.config import settings
 # -------------
 # Streamlit UI
 # -------------
-st.title("NYC Real Estate Chatbot (LangChain RAG)")
+st.title("NYC Real Estate Chatbot")
 
 # Model selection
 model_choice = st.selectbox("Choose a model:", ["OpenAI GPT-4"])
@@ -55,7 +55,7 @@ if user_input:
         # You can refine how you pass these docs to your LLM:
         context_message = {
             "role": "system",
-            "content": f"Relevant NYC Real Estate Documents: {search_results['content']}"
+            "content": f"Relevant NYC Real Estate Documents: {search_results}"
         }
         st.session_state["messages"].append(context_message)
 
