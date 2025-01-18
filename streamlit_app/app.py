@@ -9,6 +9,9 @@ sys.path.append(os.getcwd())
 # Local modules
 from streamlit_app.data_ingestor import ChromaDB
 from streamlit_app.llms.clients import OpenAILLMSClient, OllamaLLMSClient
+from streamlit_app.logger.app_logger import add_logger_context, log_message
+
+add_logger_context(logger_context="NYC Real Estate Chatbot")
 from streamlit_app.config import settings
 
 # -------------
@@ -18,6 +21,8 @@ st.title("NYC Real Estate Chatbot")
 
 # Model selection
 model_choice = st.selectbox("Choose a model:", ["OpenAI GPT-4"])
+
+log_message(f"Selected model: {model_choice}")
 
 # Initialize ChromaDB
 db = ChromaDB(collection_name="ACRIS", persist_directory=".chromadb")
@@ -39,6 +44,8 @@ for message in st.session_state["messages"]:
 # Prompt the user in a chat-style input (introduced in Streamlit 1.25.0)
 user_input = st.chat_input("Ask a question about NYC real estate...")
 
+log_message(f"User input: {user_input}")
+
 # When the user enters a question
 if user_input:
     # 1) Show the user's message in the chat
@@ -49,10 +56,11 @@ if user_input:
     try:
         # 2) Retrieve top k documents from ChromaDB
         #    We retrieve them as function-call style content or anything that suits your LLM
+        # TODO add the Query Normalization step here
+        log_message(f"Searching for documents similar to: {user_input}")
         search_results = db.search_document(user_input, k=3)
 
-        # Option A: Put the retrieved documents in a system/context message
-        # You can refine how you pass these docs to your LLM:
+
         context_message = {
             "role": "system",
             "content": f"Relevant NYC Real Estate Documents: {search_results}"
@@ -65,6 +73,7 @@ if user_input:
         else:
             client = OllamaLLMSClient()
 
+        log_message("Going for the Answer Generation", context_message)
         # 4) Get the assistant's answer (RAG: conversation + retrieved docs)
         answer = client.get_answer(st.session_state["messages"])
 

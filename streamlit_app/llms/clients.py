@@ -3,7 +3,7 @@ import instructor
 from pydantic import BaseModel, Field
 
 from streamlit_app.config import settings
-
+from streamlit_app.logger.app_logger import log_message
 
 openai_client = OpenAI(api_key=f"{settings.OPENAI_API_KEY}")
 patched_openai = instructor.patch(openai_client)
@@ -42,6 +42,9 @@ class OpenAILLMSClient:
         self.client = openai_client
 
     def get_answer(self, messages: list):
+
+        log_message(f"Getting answer for messages: {messages}")
+
         response =  self.patched_client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role":"system","content":SYSTEM_PROMPT}] + messages,
@@ -50,6 +53,7 @@ class OpenAILLMSClient:
             response_model=HumanResponse,
             seed=42
         )
+        log_message(f"Response: {response._raw_response}")
         return response.response
 
     def get_embedding(self, text: str):

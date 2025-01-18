@@ -5,6 +5,7 @@ from langchain.vectorstores import Chroma
 import chromadb
 
 from streamlit_app.llms.clients import OpenAILLMSClient
+from streamlit_app.logger.app_logger import log_message
 
 llm_client = OpenAILLMSClient()
 
@@ -48,7 +49,6 @@ class ChromaDB:
 
     def search_document(self, query: str, k: int = 3):
 
-        query_embedding = llm_client.get_embedding(query)
         """
         Search for documents similar to the query.
         Args:
@@ -57,15 +57,19 @@ class ChromaDB:
         Returns:
             list: Search results with scores.
         """
+
+        log_message("Getting the query embedding for the Query", query)
+        query_embedding = llm_client.get_embedding(query)
         search_results = self.collection.query(
             query_embedding,
             n_results=k
         )
-        pprint(search_results)
 
         metadatas = search_results['metadatas'][0]
 
         content = "\n\n\n".join([result['text'] for result in metadatas])
+
+        log_message(f"Got the search Results for the Query:{query}", content)
 
         search_as_a_function_call = [{
             "role": "function",
